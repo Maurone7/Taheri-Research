@@ -3,20 +3,25 @@ import numpy as np
 import os
 from PIL import Image
 
-reference_folder = r'/Users/mp504611/Desktop/TIFFs'
+# replace '#####' with the directory of the folder where the save are saved
+reference_folder = r'#######'
 
+# this is the filter that will be applied to the files
 choose = str(input("What xy and what channel? "
                  "\n> "))
 
+# this is the name of the folder where the cut images will be created
 fixed_folder = str(input('Name of the fixed folder?'
                        '\n>'))
 
+# if the folder does not exists already, it will be created
 if not os.path.exists(reference_folder + '/' + fixed_folder):
   os.mkdir(reference_folder + '/' + fixed_folder)
 
 file_list = []
 file_name = os.listdir(reference_folder)
 
+# mechanism to sort all the files with the criteria previosuly stated
 for file_names in file_name:
   full_path = str(reference_folder) + '/' + str(file_names)
   for starting_point in range(len(file_names)):
@@ -25,10 +30,13 @@ for file_names in file_name:
 
 print(file_list)
 
+# if no file match the criteria in the specified folder an error message will be displayed and the code will stop running
 if not file_list:
   print("No files found, try again")
   exit()
 
+
+creation of first frame
 frame = cv2.imread(str(file_list[0]))
 
 # Create old frame
@@ -37,7 +45,7 @@ old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 x_difference_list = []
 y_difference_list = []
 
-# Lucas-kanade params
+# Lucas-kanade parameters
 lk_params = dict(winSize=(700, 700),
                maxLevel=4,
                criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10000, 0.0000001))
@@ -65,24 +73,31 @@ old_points = np.array([[]])
 cv2.imshow('Frame', frame)
 i = 0
 
+# this block of code will show the images and how the point moves in the sequence, it stops once one iteration has been completed
 if i < len(file_list):
   for i in range(len(file_list) + 1):
       frame = cv2.imread(str(file_list[i - 1]))
       gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      
+      # button_number is used to stop the loop from running before a point has been created, '0' means that the program will wait until you press a button before running
       button_number = 0
 
       if point_selected is True:
+          # creation of circle on image
           cv2.circle(frame, point, 5, (0, 0, 255), 2)
 
           new_points, status, error = cv2.calcOpticalFlowPyrLK(old_gray, gray_frame, old_points, None, **lk_params)
           old_gray = gray_frame.copy()
           x_default = point[0]
           y_default = point[1]
-
+          
+          # setup of new and old point coordinate with variables
           x, y = new_points.ravel()
           old_x, old_y = old_points.ravel()
           wid = frame.shape[1]
           hgt = frame.shape[0]
+          
+          # addition of points to list
           x_point.append(x)
           y_point.append(y)
           x = int(x)
@@ -97,10 +112,13 @@ if i < len(file_list):
 
 cv2.destroyAllWindows()
 
+# determine minimum point on the x and y axis
 minimum_x_point = min(x_point)
 minimum_y_point = min(y_point)
 print(y_point)
 print(minimum_y_point)
+
+# the next block of code will determine the drift of the image and cut it accordingly
 i = 0
 if i < (len(file_list)):
   for i in range(len(file_list)):
@@ -116,9 +134,8 @@ if i < (len(file_list)):
       im = im.crop((left, top, width, height))
       im.save(reference_folder + '/' + fixed_folder + '/' + str(i) + "_fixed.tif")
 
+# the next block of code is useful to show the new pictures
 i = 0
-
-
 while True:
   reference_path = reference_folder + '/' + fixed_folder + '/' + str(i) + '_fixed.tif'
   frame = cv2.imread(reference_path)
@@ -127,14 +144,18 @@ while True:
   key = cv2.waitKey(0)
   print(i)
 
+# pressing any button will show the next picture
   cv2.waitKey(0)
   i = i + 1
 
+# if the last image is shown the loop will restart
   if i == 46:
       i = 0
 
+# if key '0' is pressed the loop will restart
   if key == 48:
       i = 0
 
+# if key 'esc' is pressed the program will end
   if key == 27:
       break

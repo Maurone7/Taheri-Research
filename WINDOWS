@@ -1,3 +1,5 @@
+# NOTE THE CODE ONY WORKS ON WINDOWS, FOR MAC CHECK DIFFERENT CODE
+
 import cv2
 import numpy as np
 import os

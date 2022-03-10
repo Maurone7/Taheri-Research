@@ -1,0 +1,151 @@
+import cv2
+import numpy as np
+import os
+from PIL import Image
+import glob
+import keyboard
+
+
+# paste directory of the folder where the files are saved
+reference_folder = input('Paste folder path'
+                        "\n>")
+                        
+# decide what filter to apply for what files to pick to use later
+choose = str(input("What xy and what channel? "
+                  "\n> "))
+
+
+# choose the name of the folder where the fixed images will be added
+fixed_folder = str(input('Name of the fixed folder?'
+                        '\n>'))
+
+# if the folder for the fixed images does not exists it will be created
+if not os.path.exists(reference_folder + '\\'[0] + fixed_folder):
+   os.mkdir(reference_folder + '\\'[0] + fixed_folder)
+
+file_list = []
+file_name = os.listdir(reference_folder)
+
+
+# addition of files to file_list if the match the criteria
+for file_names in file_name:
+   full_path = str(reference_folder) + '\\'[0] + str(file_names)
+   for starting_point in range(len(file_names)):
+       if choose == file_names[starting_point:(starting_point + len(choose))]:
+           file_list.append(full_path)
+
+# if no files match the criteria in the specified folder an error message will be displayed and the code will end
+if not file_list:
+   print("No files found, try again")
+   exit()
+
+# creation of first image
+frame = cv2.imread(str(file_list[0]))
+
+# Create old frame
+old_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+x_difference_list = []
+y_difference_list = []
+
+# Lucas-kanade parameters
+lk_params = dict(winSize=(700, 700),
+                maxLevel=4,
+                criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10000, 0.0000001))
+
+
+# Mouse function
+def select_point(event, x, y, flags, params):
+   global point, point_selected, old_points
+   if event == cv2.EVENT_LBUTTONDOWN:
+       point = (x, y)
+       point_selected = True
+       old_points = np.array([[x, y]], dtype=np.float32)
+
+
+cv2.namedWindow("Frame")
+cv2.setMouseCallback("Frame", select_point)
+
+x_point = []
+y_point = []
+x_default = 0
+y_default = 0
+point_selected = False
+point = ()
+old_points = np.array([[]])
+cv2.imshow('Frame', frame)
+i = 0
+
+
+if i < len(file_list):
+   for i in range(len(file_list) + 1):
+       frame = cv2.imread(str(file_list[i - 1]))
+       gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+       button_number = 0
+
+       if point_selected is True:
+           cv2.circle(frame, point, 5, (0, 0, 255), 2)
+
+           new_points, status, error = cv2.calcOpticalFlowPyrLK(old_gray, gray_frame, old_points, None, **lk_params)
+           old_gray = gray_frame.copy()
+           x_default = point[0]
+           y_default = point[1]
+
+           x, y = new_points.ravel()
+           old_x, old_y = old_points.ravel()
+           wid = frame.shape[1]
+           hgt = frame.shape[0]
+           x_point.append(x)
+           y_point.append(y)
+           x = int(x)
+           y = int(y)
+           old_points = new_points
+           cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+
+           cv2.imshow('Frame', frame)
+           button_number = 1
+
+       key = cv2.waitKey(button_number)
+
+cv2.destroyAllWindows()
+
+minimum_x_point = min(x_point)
+minimum_y_point = min(y_point)
+i = 0
+if i < len(file_list):
+   for i in range(len(file_list)):
+       y_difference = y_point[i] - minimum_x_point
+       x_difference = x_point[i] - minimum_y_point
+       im = Image.open(file_list[i])
+       width, height = im.size
+       left = int(x_difference)
+       top = int(y_difference)
+       im = im.crop((left, top, width, height))
+       im.save(reference_folder + '\\'[0] + fixed_folder + '\\'[0] + str(i) + "_fixed.tif")
+
+i = 0
+
+while True:
+   reference_path = reference_folder + '\\'[0] + fixed_folder + r'\\' + str(i) + '_fixed.tif'
+   frame = cv2.imread(reference_path)
+   im = Image.open(reference_path)
+   cv2.imshow('Frame', frame)
+   key = cv2.waitKey(0)
+
+   if keyboard.is_pressed('right arrow'):
+       i = i + 1
+
+   elif keyboard.is_pressed('left arrow'):
+       i -= 1
+
+   elif key == 27:
+       break
+
+   if i < 0:
+       i = 45
+
+   if i > 45:
+       i = 0
+
+   if keyboard.is_pressed('0'):
+       i = 0

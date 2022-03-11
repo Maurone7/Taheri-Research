@@ -75,10 +75,12 @@ y_default = 0
 point_selected = False
 point = ()
 old_points = np.array([[]])
+
+# show first frame
 cv2.imshow('Frame', frame)
 i = 0
 
-
+# the following block of code creates a loop to find the image drift over a series of picture
 if i < len(file_list):
    for i in range(len(file_list) + 1):
        frame = cv2.imread(str(file_list[i - 1]))
@@ -111,6 +113,7 @@ if i < len(file_list):
 
 cv2.destroyAllWindows()
 
+# find minimum point on x and y axis and assign them to variables
 minimum_x_point = min(x_point)
 minimum_y_point = min(y_point)
 i = 0
@@ -125,8 +128,8 @@ if i < len(file_list):
        im = im.crop((left, top, width, height))
        im.save(reference_folder + '\\'[0] + fixed_folder + '\\'[0] + str(i) + "_fixed.tif")
 
+# following block of code shows the cut images
 i = 0
-
 while True:
    reference_path = reference_folder + '\\'[0] + fixed_folder + r'\\' + str(i) + '_fixed.tif'
    frame = cv2.imread(reference_path)
@@ -134,20 +137,25 @@ while True:
    cv2.imshow('Frame', frame)
    key = cv2.waitKey(0)
 
+# pressing 'right arrow' key will show next picture
    if keyboard.is_pressed('right arrow'):
        i = i + 1
-
+# pressing 'left arrow' key will show previous picture
    elif keyboard.is_pressed('left arrow'):
        i -= 1
 
+# if 'esc' key is pressed the code will end
    elif key == 27:
        break
 
+# if you click left arrow on first picture the last picture will be shown
    if i < 0:
        i = 45
 
+# restart loop if the last picture has been reached
    if i > 45:
        i = 0
 
+# if '0' key is pressed the first picture of the loop will be shown
    if keyboard.is_pressed('0'):
        i = 0

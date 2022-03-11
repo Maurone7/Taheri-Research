@@ -1,3 +1,6 @@
+# BEWARE: THE CODE ONY WORKS ON MAC, FOR MAC CHECK DIFFERENT CODE
+# THIS CODE CAN BE IMPROVED, SEVERAL CHANGES CAN BE MADE, EMAIL ME AT mauro.patimo@gmail.com if you have any suggestions
+
 import cv2
 import numpy as np
 import os

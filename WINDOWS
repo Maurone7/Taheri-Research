@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import os
 from PIL import Image
-import glob
+import glob   # glob is not necessary, I found it useful for the files
 import keyboard
 
 
@@ -136,8 +136,11 @@ while True:
    frame = cv2.imread(reference_path)
    im = Image.open(reference_path)
    cv2.imshow('Frame', frame)
+   
+# wait for a key press before showing next image
    key = cv2.waitKey(0)
 
+# MAKE SURE TO KEEP THE NEXT LINES OF CODE IN THE ORDER THEY ARE
 # pressing 'right arrow' key will show next picture
    if keyboard.is_pressed('right arrow'):
        i = i + 1
@@ -160,3 +163,5 @@ while True:
 # if '0' key is pressed the first picture of the loop will be shown
    if keyboard.is_pressed('0'):
        i = 0
+       
+# END OF THE CODE

@@ -71,8 +71,6 @@ cv2.setMouseCallback("Frame", select_point)
 
 x_point = []
 y_point = []
-x_default = 0
-y_default = 0
 point_selected = False
 point = ()
 old_points = np.array([[]])
